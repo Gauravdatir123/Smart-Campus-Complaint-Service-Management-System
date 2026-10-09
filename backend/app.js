@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 
+const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const complaintRoutes = require("./routes/complaintRoutes");
 const adminRoutes = require("./routes/adminRoutes");
@@ -44,6 +45,16 @@ app.use(express.json({ limit: "100kb" }));
 app.use((req, _res, next) => {
     if (req.body === undefined) req.body = {};
     next();
+});
+
+// Connect to MongoDB on the first request (works on Vercel serverless)
+app.use(async (_req, _res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        next(err);
+    }
 });
 
 app.get("/", (_req, res) => {

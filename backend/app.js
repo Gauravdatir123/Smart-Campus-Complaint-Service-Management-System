@@ -18,9 +18,12 @@ app.set("trust proxy", 1);
 
 app.use(helmet());
 
-// Only allow the configured frontend origin(s), e.g. CLIENT_URL=https://my-app.vercel.app
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
-    .split(",")
+// Allowed frontend origins. CLIENT_URL can hold several, separated by commas.
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://smart-campus-complaint-service-mana.vercel.app",
+    ...(process.env.CLIENT_URL || "").split(",")
+]
     .map((o) => o.trim().replace(/\/$/, ""))
     .filter(Boolean);
 
@@ -30,7 +33,9 @@ app.use(
             // no Origin header = curl/Postman/server-to-server
             if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
             cb(ApiError.forbidden(`CORS: origin ${origin} is not allowed`));
-        }
+        },
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"]
     })
 );
 
